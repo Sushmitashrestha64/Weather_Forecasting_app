@@ -5,7 +5,7 @@ import pandas as pd
 from datetime import datetime
 import pytz
 
-API_KEY = '70ff9507484aa74214bb3005bc88a1bd'
+API_KEY = '-----------------------------'
 BASE_URL = 'https://api.openweathermap.org/data/2.5/'
 MODELS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'models')
 
