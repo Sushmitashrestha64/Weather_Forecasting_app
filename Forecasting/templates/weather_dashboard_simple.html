@@ -675,6 +675,49 @@
                 box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
             }
 
+            .hourly-forecast-card {
+                padding: 0 !important;
+                overflow: hidden;
+                transition: all 0.3s ease;
+                border: 1px solid var(--border);
+                cursor: pointer;
+            }
+
+            .hourly-forecast-card:hover {
+                transform: translateY(-8px);
+                box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
+                border-color: var(--primary);
+            }
+
+            .hourly-forecast-header {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                padding: 12px;
+                text-align: center;
+                color: white;
+                transition: all 0.3s ease;
+            }
+
+            .hourly-forecast-card:hover .hourly-forecast-header {
+                background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+            }
+
+            .hourly-forecast-body {
+                padding: 20px 16px 16px;
+                text-align: center;
+                background: linear-gradient(to bottom, #f8fafc 0%, white 100%);
+            }
+
+            @keyframes pulse {
+                0%, 100% {
+                    transform: scale(1);
+                    opacity: 1;
+                }
+                50% {
+                    transform: scale(1.1);
+                    opacity: 0.8;
+                }
+            }
+
             @media (max-width: 768px) {
                 .container {
                     padding: 0 1rem;
@@ -694,6 +737,14 @@
 
                 .metric-value {
                     font-size: 1.5rem;
+                }
+
+                .hourly-forecast-card {
+                    min-width: 140px;
+                }
+
+                .hourly-forecast-body {
+                    padding: 16px 12px 12px;
                 }
             }
         </style>
@@ -955,6 +1006,161 @@
                                 style="width: {{ comfort_index.score }}%"
                             ></div>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5-Hour Weather Forecast Section -->
+            <h2 class="section-header">
+                <i class="bi bi-clock-history section-icon"></i>
+                Hourly Weather Forecast
+            </h2>
+            <div class="card">
+                {% if hourly_predictions %}
+                <div class="subsection">
+                    <h3 class="subsection-title">
+                        <i class="bi bi-clock-history"></i> Hourly Forecast
+                    </h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px;">
+                        {% for prediction in hourly_predictions %}
+                        <div class="card hourly-forecast-card">
+                            <!-- Header with time -->
+                            <div class="hourly-forecast-header">
+                                <div style="font-size: 0.75rem; opacity: 0.9; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">
+                                    +{{ prediction.hour }} Hour{{ prediction.hour|pluralize }}
+                                </div>
+                                <div style="font-size: 1rem; font-weight: 600;">
+                                    {{ prediction.time }}
+                                </div>
+                            </div>
+                            
+                            <!-- Weather Icon -->
+                            <div class="hourly-forecast-body">
+                                <div style="margin-bottom: 12px; position: relative; display: inline-block;">
+                                    {% if prediction.humidity > 85 and prediction.temperature < 15 %}
+                                        <div style="width: 80px; height: 80px; border-radius: 50%; background: radial-gradient(circle, rgba(59, 130, 246, 0.2), transparent); display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                            <i class="bi bi-cloud-rain-heavy-fill" style="font-size: 3.5rem; color: #3b82f6; filter: drop-shadow(0 4px 12px rgba(59, 130, 246, 0.5));"></i>
+                                        </div>
+                                    {% elif prediction.humidity > 75 and prediction.temperature < 20 %}
+                                        <div style="width: 80px; height: 80px; border-radius: 50%; background: radial-gradient(circle, rgba(96, 165, 250, 0.2), transparent); display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                            <i class="bi bi-cloud-drizzle-fill" style="font-size: 3.5rem; color: #60a5fa; filter: drop-shadow(0 4px 12px rgba(96, 165, 250, 0.5));"></i>
+                                        </div>
+                                    {% elif prediction.humidity > 80 %}
+                                        <div style="width: 80px; height: 80px; border-radius: 50%; background: radial-gradient(circle, rgba(148, 163, 184, 0.2), transparent); display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                            <i class="bi bi-cloud-fog2-fill" style="font-size: 3.5rem; color: #94a3b8; filter: drop-shadow(0 4px 12px rgba(148, 163, 184, 0.5));"></i>
+                                        </div>
+                                    {% elif prediction.temperature > 30 %}
+                                        <div style="width: 80px; height: 80px; border-radius: 50%; background: radial-gradient(circle, rgba(245, 158, 11, 0.25), transparent); display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                            <i class="bi bi-sun-fill" style="font-size: 3.5rem; color: #f59e0b; filter: drop-shadow(0 4px 12px rgba(245, 158, 11, 0.6)); animation: pulse 2s ease-in-out infinite;"></i>
+                                        </div>
+                                    {% elif prediction.temperature > 25 %}
+                                        <div style="width: 80px; height: 80px; border-radius: 50%; background: radial-gradient(circle, rgba(251, 191, 36, 0.25), transparent); display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                            <i class="bi bi-brightness-high-fill" style="font-size: 3.5rem; color: #fbbf24; filter: drop-shadow(0 4px 12px rgba(251, 191, 36, 0.5));"></i>
+                                        </div>
+                                    {% elif prediction.temperature > 20 %}
+                                        <div style="width: 80px; height: 80px; border-radius: 50%; background: radial-gradient(circle, rgba(96, 165, 250, 0.2), transparent); display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                            <i class="bi bi-cloud-sun-fill" style="font-size: 3.5rem; color: #60a5fa; filter: drop-shadow(0 4px 12px rgba(96, 165, 250, 0.5));"></i>
+                                        </div>
+                                    {% elif prediction.temperature > 15 %}
+                                        <div style="width: 80px; height: 80px; border-radius: 50%; background: radial-gradient(circle, rgba(148, 163, 184, 0.2), transparent); display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                            <i class="bi bi-clouds-fill" style="font-size: 3.5rem; color: #94a3b8; filter: drop-shadow(0 4px 12px rgba(148, 163, 184, 0.5));"></i>
+                                        </div>
+                                    {% elif prediction.temperature > 10 %}
+                                        <div style="width: 80px; height: 80px; border-radius: 50%; background: radial-gradient(circle, rgba(100, 116, 139, 0.2), transparent); display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                            <i class="bi bi-cloud-fill" style="font-size: 3.5rem; color: #64748b; filter: drop-shadow(0 4px 12px rgba(100, 116, 139, 0.5));"></i>
+                                        </div>
+                                    {% elif prediction.temperature > 5 %}
+                                        <div style="width: 80px; height: 80px; border-radius: 50%; background: radial-gradient(circle, rgba(124, 58, 237, 0.2), transparent); display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                            <i class="bi bi-cloud-haze-fill" style="font-size: 3.5rem; color: #7c3aed; filter: drop-shadow(0 4px 12px rgba(124, 58, 237, 0.5));"></i>
+                                        </div>
+                                    {% else %}
+                                        <div style="width: 80px; height: 80px; border-radius: 50%; background: radial-gradient(circle, rgba(96, 165, 250, 0.2), transparent); display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                            <i class="bi bi-snow" style="font-size: 3.5rem; color: #60a5fa; filter: drop-shadow(0 4px 12px rgba(96, 165, 250, 0.5));"></i>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                
+                                <!-- Temperature -->
+                                <div style="margin-bottom: 12px;">
+                                    <div style="font-size: 2rem; font-weight: 700; color: var(--primary); line-height: 1;">
+                                        {{ prediction.temperature|floatformat:1 }}°C
+                                    </div>
+                                    <div style="font-size: 0.75rem; color: var(--secondary); margin-top: 4px;">
+                                        {% if prediction.temperature > current_weather.current_temp %}
+                                            <i class="bi bi-arrow-up" style="color: #ef4444;"></i> Warmer
+                                        {% elif prediction.temperature < current_weather.current_temp %}
+                                            <i class="bi bi-arrow-down" style="color: #3b82f6;"></i> Cooler
+                                        {% else %}
+                                            <i class="bi bi-dash"></i> Same
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <!-- Humidity -->
+                                <div style="display: flex; align-items: center; justify-content: center; gap: 8px; padding: 8px 12px; background: #f1f5f9; border-radius: 8px; margin-bottom: 8px;">
+                                    <i class="bi bi-droplet-fill" style="color: #3b82f6; font-size: 0.9rem;"></i>
+                                    <span style="font-size: 0.875rem; font-weight: 600; color: var(--dark);">
+                                        {{ prediction.humidity|floatformat:0 }}%
+                                    </span>
+                                    <span style="font-size: 0.75rem; color: var(--secondary);">
+                                        Humidity
+                                    </span>
+                                </div>
+                                
+                                <!-- Condition Badge -->
+                                <div style="margin-top: 8px;">
+                                    {% if prediction.humidity > 80 %}
+                                        <span style="display: inline-block; padding: 4px 10px; background: #dbeafe; color: #1e40af; border-radius: 12px; font-size: 0.75rem; font-weight: 500;">
+                                            <i class="bi bi-droplet"></i> Humid
+                                        </span>
+                                    {% elif prediction.humidity < 30 %}
+                                        <span style="display: inline-block; padding: 4px 10px; background: #fef3c7; color: #92400e; border-radius: 12px; font-size: 0.75rem; font-weight: 500;">
+                                            <i class="bi bi-sun"></i> Dry
+                                        </span>
+                                    {% else %}
+                                        <span style="display: inline-block; padding: 4px 10px; background: #d1fae5; color: #065f46; border-radius: 12px; font-size: 0.75rem; font-weight: 500;">
+                                            <i class="bi bi-check-circle"></i> Comfortable
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% else %}
+                <div class="subsection">
+                    <p style="text-align: center; color: #666; padding: 20px">
+                        <i class="bi bi-info-circle"></i> No hourly predictions
+                        available at this time.
+                    </p>
+                </div>
+                {% endif %}
+
+                <div
+                    style="
+                        margin-top: 20px;
+                        padding: 15px;
+                        background: #f0f9ff;
+                        border-radius: 8px;
+                        border-left: 4px solid var(--primary);
+                    "
+                >
+                    <div style="display: flex; align-items: center; gap: 10px">
+                        <i
+                            class="bi bi-info-circle"
+                            style="color: var(--primary); font-size: 1.2em"
+                        ></i>
+                        <span style="color: #1e40af; font-size: 0.95em">
+                            {% if hourly_predictions.0.method == 'heuristic' %}
+                            These predictions are generated using intelligent
+                            weather analysis algorithms.
+                            {% else %}
+                            These predictions are generated using machine learning
+                            models trained on historical weather data.
+                            {% endif %}
+                            Actual conditions may vary.
+                        </span>
                     </div>
                 </div>
             </div>

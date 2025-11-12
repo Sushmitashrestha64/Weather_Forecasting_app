@@ -17,6 +17,7 @@ from .api_client import get_current_weather
 from .city_matcher import CityMatcher
 from .models import PredictionLog, SearchHistory
 from .news_fetcher import NewsFetcher
+from .prediction_service import get_predictor
 from .weather_analytics import WeatherAnalytics
 from .weather_insights import WeatherInsights
 
@@ -162,6 +163,31 @@ def weather_dashboard(request):
         insights_engine = WeatherInsights()
         news_fetcher = NewsFetcher()
 
+        # Get weather predictor for 5-hour predictions
+        try:
+            predictor = get_predictor()
+            predictions = predictor.get_comprehensive_predictions(current_weather)
+
+            # Save predictions to log
+            user = request.user if request.user.is_authenticated else None
+            predictor.save_predictions_to_log(city, current_weather, user)
+        except Exception as pred_error:
+            print(f"Error getting predictions: {pred_error}")
+            import traceback
+
+            traceback.print_exc()
+            predictions = {
+                "rain": {"rain_prediction": 0, "rain_probability": 0.0},
+                "hourly_predictions": [],
+                "success": False,
+            }
+
+        # Extract prediction variables immediately to ensure they're available
+        rain_prediction = predictions.get("rain", {}).get("rain_prediction", 0)
+        rain_probability = predictions.get("rain", {}).get("rain_probability", 0.0)
+        hourly_predictions = predictions.get("hourly_predictions", [])
+        predictions_success = predictions.get("success", False)
+
         # Fetch global weather news (top 10)
         global_news = news_fetcher.get_trending_news(category="weather", max_results=10)
 
@@ -225,6 +251,7 @@ def weather_dashboard(request):
 
         # Calculate trends if we have historical data
         trends = None
+        volatility = None
         if prediction_history.count() >= 3:
             historical_data = []
             for pred in prediction_history:
@@ -235,6 +262,9 @@ def weather_dashboard(request):
                             "temperature": input_features.get("Temp", 0),
                             "humidity": input_features.get("Humidity", 0),
                             "pressure": input_features.get("Pressure", 0),
+                            "temp": input_features.get(
+                                "Temp", 0
+                            ),  # Add both for compatibility
                             "date": pred.prediction_date,
                         }
                     )
@@ -242,12 +272,12 @@ def weather_dashboard(request):
                     pass
 
             if len(historical_data) >= 3:
-                trends = analytics.analyze_weather_trends(historical_data)
-                volatility = analytics.calculate_weather_volatility(historical_data)
-            else:
-                volatility = None
-        else:
-            volatility = None
+                try:
+                    trends = analytics.analyze_weather_trends(historical_data)
+                    volatility = analytics.calculate_weather_volatility(historical_data)
+                except Exception as vol_error:
+                    print(f"Error calculating volatility: {vol_error}")
+                    volatility = None
 
         # Prepare context
         context = {
@@ -278,16 +308,60 @@ def weather_dashboard(request):
             # Add news
             "global_news": global_news,
             "location_news": location_news,
+            # Add 5-hour predictions (already extracted above)
+            "rain_prediction": rain_prediction,
+            "rain_probability": rain_probability,
+            "hourly_predictions": hourly_predictions,
+            "predictions_success": predictions_success,
         }
 
         return render(request, "weather_dashboard_simple.html", context)
 
     except Exception as e:
         # Catch any errors and show user-friendly message
-        messages.error(
-            request, f"City not found: {city}. Please check the spelling and try again."
-        )
-        return render(request, "weather_dashboard_simple.html")
+        print(f"Error in weather_dashboard view: {e}")
+        import traceback
+
+        traceback.print_exc()
+
+        # Return partial data if we got this far
+        if "current_weather" in locals() and current_weather:
+            messages.warning(request, f"Showing weather data with limited analytics.")
+
+            # Build minimal context with predictions if available
+            minimal_context = {
+                "city": current_weather.get("city", city),
+                "country": current_weather.get("country", "Unknown"),
+                "current_weather": current_weather,
+                "heat_index": locals().get("heat_index", 0),
+                "wind_chill": locals().get("wind_chill", 0),
+                "dew_point": locals().get("dew_point", 0),
+                "comfort_index": locals().get(
+                    "comfort_index", {"score": 50, "level": "Moderate"}
+                ),
+                "precip_probability": locals().get("precip_prob", 0),
+                "extreme_warnings": [],
+                "recommendations": [],
+                "trends": None,
+                "volatility": None,
+                "search_count": 0,
+                "prediction_count": 0,
+                "global_news": [],
+                "location_news": [],
+                # Include predictions - use the extracted variables
+                "rain_prediction": locals().get("rain_prediction", 0),
+                "rain_probability": locals().get("rain_probability", 0.0),
+                "hourly_predictions": locals().get("hourly_predictions", []),
+                "predictions_success": locals().get("predictions_success", False),
+            }
+
+            return render(request, "weather_dashboard_simple.html", minimal_context)
+        else:
+            messages.error(
+                request,
+                f"Unable to fetch weather data. Please try again.",
+            )
+            return render(request, "weather_dashboard_simple.html")
 
 
 @login_required

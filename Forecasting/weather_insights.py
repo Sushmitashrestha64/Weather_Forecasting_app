@@ -930,41 +930,61 @@ class WeatherInsights:
         try:
             # Get historical predictions for this city
             month = datetime.now().month
-            historical = PredictionLog.objects.filter(
+            historical_logs = PredictionLog.objects.filter(
                 city_name__iexact=city, prediction_date__month=month
-            ).aggregate(
-                avg_temp=Avg("input_features__Temp"),
-                max_temp=Max("input_features__Temp"),
-                min_temp=Min("input_features__Temp"),
             )
 
-            if historical["avg_temp"]:
-                current_temp = current_weather.get("current_temp", 20)
-                avg_temp = float(historical["avg_temp"])
+            if not historical_logs.exists():
+                return None
 
-                comparison = {
-                    "current": current_temp,
-                    "historical_average": round(avg_temp, 1),
-                    "difference": round(current_temp - avg_temp, 1),
-                    "status": "typical",
-                }
+            # Parse JSON input_features and extract temperatures
+            temps = []
+            for log in historical_logs:
+                try:
+                    features = log.get_input_features()
+                    if "Temp" in features:
+                        temps.append(float(features["Temp"]))
+                except Exception:
+                    continue
 
-                if abs(current_temp - avg_temp) > 5:
-                    if current_temp > avg_temp:
-                        comparison["status"] = "warmer than usual"
-                        comparison["note"] = (
-                            f"It's {abs(current_temp - avg_temp):.1f}°C warmer than average for this time."
-                        )
-                    else:
-                        comparison["status"] = "cooler than usual"
-                        comparison["note"] = (
-                            f"It's {abs(current_temp - avg_temp):.1f}°C cooler than average for this time."
-                        )
+            if not temps:
+                return None
+
+            # Calculate statistics
+            avg_temp = sum(temps) / len(temps)
+            max_temp = max(temps)
+            min_temp = min(temps)
+            current_temp = current_weather.get("current_temp", 20)
+
+            comparison = {
+                "current": current_temp,
+                "historical_average": round(avg_temp, 1),
+                "historical_max": round(max_temp, 1),
+                "historical_min": round(min_temp, 1),
+                "difference": round(current_temp - avg_temp, 1),
+                "status": "typical",
+                "sample_size": len(temps),
+            }
+
+            if abs(current_temp - avg_temp) > 5:
+                if current_temp > avg_temp:
+                    comparison["status"] = "warmer than usual"
+                    comparison["note"] = (
+                        f"It's {abs(current_temp - avg_temp):.1f}°C warmer than average for this time."
+                    )
                 else:
-                    comparison["note"] = "Temperature is typical for this time of year."
+                    comparison["status"] = "cooler than usual"
+                    comparison["note"] = (
+                        f"It's {abs(current_temp - avg_temp):.1f}°C cooler than average for this time."
+                    )
+            else:
+                comparison["note"] = "Temperature is typical for this time of year."
 
-                return comparison
+            return comparison
         except Exception as e:
             print(f"Error in historical comparison: {e}")
+            import traceback
+
+            traceback.print_exc()
 
         return None
