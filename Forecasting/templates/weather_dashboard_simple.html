@@ -1012,57 +1012,7 @@
                 </div>
             </div>
 
-            {% if health_insights.risks or health_insights.recommendations %}
-            <h2 class="section-header">
-                <i class="bi bi-heart-pulse section-icon"></i>
-                Health & Safety
-            </h2>
-            <div class="card">
-                {% if health_insights.risk_level %}
-                <div class="subsection">
-                    <span
-                        class="badge badge-{% if health_insights.risk_level == 'High' %}danger{% elif health_insights.risk_level == 'Moderate' %}warning{% else %}success{% endif %}"
-                    >
-                        Risk Level: {{ health_insights.risk_level }}
-                    </span>
-                </div>
-                {% endif %} {% if health_insights.risks %}
-                <div class="subsection">
-                    <div class="subsection-title">
-                        <i class="bi bi-exclamation-triangle"></i>
-                        Identified Risks
-                    </div>
-                    <ul class="info-list">
-                        {% for risk in health_insights.risks %}
-                        <li class="info-item">
-                            <i class="bi bi-dot info-icon"></i>
-                            <div class="info-content">
-                                <p>{{ risk }}</p>
-                            </div>
-                        </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                {% endif %} {% if health_insights.recommendations %}
-                <div class="subsection">
-                    <div class="subsection-title">
-                        <i class="bi bi-shield-check"></i>
-                        Safety Recommendations
-                    </div>
-                    <ul class="info-list">
-                        {% for rec in health_insights.recommendations %}
-                        <li class="info-item">
-                            <i class="bi bi-check-circle info-icon"></i>
-                            <div class="info-content">
-                                <p>{{ rec }}</p>
-                            </div>
-                        </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                {% endif %}
-            </div>
-            {% endif %} {% if travel_insights.overall_conditions %}
+            {% if travel_insights.overall_conditions %}
             <h2 class="section-header">
                 <i class="bi bi-airplane section-icon"></i>
                 Travel Conditions
