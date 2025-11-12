@@ -280,14 +280,14 @@ class NewsFetcher:
 
     def get_trending_news(self, category="weather", max_results=10):
         """
-        Get trending news in a specific category
+        Get trending news in a specific category (last 7 days only)
 
         Args:
             category (str): News category
             max_results (int): Maximum articles
 
         Returns:
-            list: Trending news articles
+            list: Trending news articles from the past week
         """
         try:
             # Different RSS endpoints for trending topics
@@ -310,25 +310,54 @@ class NewsFetcher:
 
             items = channel.findall("item")
 
-            for item in items[:max_results]:
+            # Calculate date threshold (7 days ago)
+            week_ago = datetime.now() - timedelta(days=7)
+
+            for item in items:
                 try:
                     title = item.find("title")
                     link = item.find("link")
                     pub_date = item.find("pubDate")
                     source = item.find("source")
 
+                    # Parse the publication date
+                    pub_date_str = pub_date.text if pub_date is not None else None
+                    if pub_date_str:
+                        try:
+                            # Try to parse the date
+                            pub_datetime = datetime.strptime(
+                                pub_date_str, "%a, %d %b %Y %H:%M:%S %Z"
+                            )
+                        except ValueError:
+                            try:
+                                # Try alternative format with timezone
+                                pub_datetime = datetime.strptime(
+                                    pub_date_str, "%a, %d %b %Y %H:%M:%S %z"
+                                )
+                                # Remove timezone info for comparison
+                                pub_datetime = pub_datetime.replace(tzinfo=None)
+                            except ValueError:
+                                # If parsing fails, skip date filtering for this item
+                                pub_datetime = datetime.now()
+
+                        # Skip news older than 7 days
+                        if pub_datetime < week_ago:
+                            continue
+
                     news_item = {
                         "title": self._clean_title(
                             title.text if title is not None else "No title"
                         ),
                         "link": link.text if link is not None else "#",
-                        "published": self._parse_date(
-                            pub_date.text if pub_date is not None else None
-                        ),
+                        "published": self._parse_date(pub_date_str),
                         "source": source.text if source is not None else "Unknown",
                     }
 
                     news_items.append(news_item)
+
+                    # Stop if we have enough results
+                    if len(news_items) >= max_results:
+                        break
 
                 except Exception as e:
                     logger.error(f"Error parsing trending news: {str(e)}")

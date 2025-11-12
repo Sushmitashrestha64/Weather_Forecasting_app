@@ -14,6 +14,7 @@ from django.shortcuts import redirect, render
 from django.views.decorators.http import require_http_methods
 
 from .api_client import get_current_weather
+from .city_matcher import CityMatcher
 from .models import PredictionLog, SearchHistory
 from .news_fetcher import NewsFetcher
 from .weather_analytics import WeatherAnalytics
@@ -119,131 +120,174 @@ def weather_dashboard(request):
         messages.error(request, "Please enter a city name")
         return render(request, "weather_dashboard_simple.html")
 
-    # Get current weather
-    current_weather = get_current_weather(city)
-    if not current_weather:
-        messages.error(request, f"Could not find city: {city}")
-        return render(request, "weather_dashboard.html")
+    try:
+        # Try to correct city name if there are typos
+        corrected_city, was_corrected, suggestions = CityMatcher.correct_city_name(
+            city, auto_correct_threshold=0.85
+        )
 
-    analytics = WeatherAnalytics()
-    insights_engine = WeatherInsights()
-    news_fetcher = NewsFetcher()
+        # If auto-corrected, inform the user (only if actually different, not just case)
+        if was_corrected and corrected_city.lower() != city.lower():
+            messages.info(
+                request,
+                f"Showing results for '{corrected_city}' (corrected from '{city}')",
+            )
 
-    # Fetch weather-specific news for location (top 10)
-    location_news = news_fetcher.get_weather_news(city, max_results=10)
+        if was_corrected:
+            city = corrected_city
 
-    # Calculate all advanced metrics
-    heat_index = analytics.calculate_heat_index(
-        current_weather["current_temp"], current_weather["humidity"]
-    )
-
-    wind_chill = analytics.calculate_wind_chill(
-        current_weather["current_temp"], current_weather["wind_speed"] * 3.6
-    )
-
-    dew_point = analytics.calculate_dew_point(
-        current_weather["current_temp"], current_weather["humidity"]
-    )
-
-    comfort_index = analytics.calculate_comfort_index(
-        current_weather["current_temp"],
-        current_weather["humidity"],
-        current_weather["wind_speed"] * 3.6,
-    )
-
-    precip_prob = analytics.calculate_precipitation_probability_advanced(
-        current_weather["humidity"],
-        current_weather["pressure"],
-        current_weather["current_temp"],
-        current_weather["clouds"],
-    )
-
-    extreme_warnings = analytics.detect_extreme_weather(current_weather)
-
-    weather_data_for_recommendations = {
-        "current_temp": current_weather["current_temp"],
-        "humidity": current_weather["humidity"],
-        "wind_speed": current_weather["wind_speed"],
-        "rain_prediction": 1 if precip_prob > 60 else 0,
-        "description": current_weather["description"],
-    }
-    recommendations = analytics.get_weather_recommendation(
-        weather_data_for_recommendations
-    )
-
-    # Generate intelligent insights
-    forecast_data = None  # Can be populated with actual forecast if available
-    intelligent_insights = insights_engine.get_comprehensive_insights(
-        current_weather, forecast_data, city
-    )
-
-    # Get recent search history for trends
-    recent_searches = SearchHistory.objects.filter(city_name__iexact=city).order_by(
-        "-searched_at"
-    )[:10]
-
-    # Get prediction history
-    prediction_history = PredictionLog.objects.filter(city_name__iexact=city).order_by(
-        "-prediction_date"
-    )[:10]
-
-    # Calculate trends if we have historical data
-    trends = None
-    if prediction_history.count() >= 3:
-        historical_data = []
-        for pred in prediction_history:
-            try:
-                input_features = json.loads(pred.input_features)
-                historical_data.append(
-                    {
-                        "temperature": input_features.get("Temp", 0),
-                        "humidity": input_features.get("Humidity", 0),
-                        "pressure": input_features.get("Pressure", 0),
-                        "date": pred.prediction_date,
-                    }
+        # Get current weather
+        current_weather = get_current_weather(city)
+        if not current_weather:
+            # If weather fetch failed, show suggestions
+            if suggestions:
+                suggestion_cities = [s["city"] for s in suggestions[:3]]
+                messages.error(
+                    request,
+                    f"City not found: {city}. Did you mean one of these cities?",
                 )
-            except:
-                pass
+                return render(
+                    request,
+                    "weather_dashboard_simple.html",
+                    {"city_suggestions": suggestion_cities, "searched_city": city},
+                )
+            else:
+                messages.error(
+                    request,
+                    f"City not found: {city}. Please check the spelling and try again.",
+                )
+            return render(request, "weather_dashboard_simple.html")
 
-        if len(historical_data) >= 3:
-            trends = analytics.analyze_weather_trends(historical_data)
-            volatility = analytics.calculate_weather_volatility(historical_data)
+        analytics = WeatherAnalytics()
+        insights_engine = WeatherInsights()
+        news_fetcher = NewsFetcher()
+
+        # Fetch global weather news (top 10)
+        global_news = news_fetcher.get_trending_news(category="weather", max_results=10)
+
+        # Fetch weather-specific news for location (top 10)
+        location_news = news_fetcher.get_weather_news(city, max_results=10)
+
+        # Calculate all advanced metrics
+        heat_index = analytics.calculate_heat_index(
+            current_weather["current_temp"], current_weather["humidity"]
+        )
+
+        wind_chill = analytics.calculate_wind_chill(
+            current_weather["current_temp"], current_weather["wind_speed"] * 3.6
+        )
+
+        dew_point = analytics.calculate_dew_point(
+            current_weather["current_temp"], current_weather["humidity"]
+        )
+
+        comfort_index = analytics.calculate_comfort_index(
+            current_weather["current_temp"],
+            current_weather["humidity"],
+            current_weather["wind_speed"] * 3.6,
+        )
+
+        precip_prob = analytics.calculate_precipitation_probability_advanced(
+            current_weather["humidity"],
+            current_weather["pressure"],
+            current_weather["current_temp"],
+            current_weather["clouds"],
+        )
+
+        extreme_warnings = analytics.detect_extreme_weather(current_weather)
+
+        weather_data_for_recommendations = {
+            "current_temp": current_weather["current_temp"],
+            "humidity": current_weather["humidity"],
+            "wind_speed": current_weather["wind_speed"],
+            "rain_prediction": 1 if precip_prob > 60 else 0,
+            "description": current_weather["description"],
+        }
+        recommendations = analytics.get_weather_recommendation(
+            weather_data_for_recommendations
+        )
+
+        # Generate intelligent insights
+        forecast_data = None  # Can be populated with actual forecast if available
+        intelligent_insights = insights_engine.get_comprehensive_insights(
+            current_weather, forecast_data, city
+        )
+
+        # Get recent search history for trends
+        recent_searches = SearchHistory.objects.filter(city_name__iexact=city).order_by(
+            "-searched_at"
+        )[:10]
+
+        # Get prediction history
+        prediction_history = PredictionLog.objects.filter(
+            city_name__iexact=city
+        ).order_by("-prediction_date")[:10]
+
+        # Calculate trends if we have historical data
+        trends = None
+        if prediction_history.count() >= 3:
+            historical_data = []
+            for pred in prediction_history:
+                try:
+                    input_features = json.loads(pred.input_features)
+                    historical_data.append(
+                        {
+                            "temperature": input_features.get("Temp", 0),
+                            "humidity": input_features.get("Humidity", 0),
+                            "pressure": input_features.get("Pressure", 0),
+                            "date": pred.prediction_date,
+                        }
+                    )
+                except:
+                    pass
+
+            if len(historical_data) >= 3:
+                trends = analytics.analyze_weather_trends(historical_data)
+                volatility = analytics.calculate_weather_volatility(historical_data)
+            else:
+                volatility = None
         else:
             volatility = None
-    else:
-        volatility = None
 
-    # Prepare context
-    context = {
-        "city": current_weather["city"],
-        "country": current_weather["country"],
-        "current_weather": current_weather,
-        "heat_index": heat_index,
-        "wind_chill": wind_chill,
-        "dew_point": dew_point,
-        "comfort_index": comfort_index,
-        "precip_probability": precip_prob,
-        "extreme_warnings": extreme_warnings,
-        "recommendations": recommendations,
-        "trends": trends,
-        "volatility": volatility,
-        "search_count": recent_searches.count(),
-        "prediction_count": prediction_history.count(),
-        # Add intelligent insights
-        "clothing_insights": intelligent_insights.get("clothing"),
-        "health_insights": intelligent_insights.get("health"),
-        "activity_insights": intelligent_insights.get("activities"),
-        "travel_insights": intelligent_insights.get("travel"),
-        "energy_insights": intelligent_insights.get("energy"),
-        "agriculture_insights": intelligent_insights.get("agriculture"),
-        "photography_insights": intelligent_insights.get("photography"),
-        "smart_alerts": intelligent_insights.get("alerts"),
-        "historical_comparison": intelligent_insights.get("comparison"),
-        # Add location news
-        "location_news": location_news,
-    }
+        # Prepare context
+        context = {
+            "city": current_weather["city"],
+            "country": current_weather["country"],
+            "current_weather": current_weather,
+            "heat_index": heat_index,
+            "wind_chill": wind_chill,
+            "dew_point": dew_point,
+            "comfort_index": comfort_index,
+            "precip_probability": precip_prob,
+            "extreme_warnings": extreme_warnings,
+            "recommendations": recommendations,
+            "trends": trends,
+            "volatility": volatility,
+            "search_count": recent_searches.count(),
+            "prediction_count": prediction_history.count(),
+            # Add intelligent insights
+            "clothing_insights": intelligent_insights.get("clothing"),
+            "health_insights": intelligent_insights.get("health"),
+            "activity_insights": intelligent_insights.get("activities"),
+            "travel_insights": intelligent_insights.get("travel"),
+            "energy_insights": intelligent_insights.get("energy"),
+            "agriculture_insights": intelligent_insights.get("agriculture"),
+            "photography_insights": intelligent_insights.get("photography"),
+            "smart_alerts": intelligent_insights.get("alerts"),
+            "historical_comparison": intelligent_insights.get("comparison"),
+            # Add news
+            "global_news": global_news,
+            "location_news": location_news,
+        }
 
-    return render(request, "weather_dashboard_simple.html", context)
+        return render(request, "weather_dashboard_simple.html", context)
+
+    except Exception as e:
+        # Catch any errors and show user-friendly message
+        messages.error(
+            request, f"City not found: {city}. Please check the spelling and try again."
+        )
+        return render(request, "weather_dashboard_simple.html")
 
 
 @login_required
