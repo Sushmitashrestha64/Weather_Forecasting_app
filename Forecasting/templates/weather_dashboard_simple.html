@@ -1036,92 +1036,128 @@
                             
                             <!-- Weather Icon -->
                             <div class="hourly-forecast-body">
-                                <div style="margin-bottom: 12px; position: relative; display: inline-block;">
-                                    {% if prediction.humidity > 85 and prediction.temperature < 15 %}
-                                        <div style="width: 80px; height: 80px; border-radius: 50%; background: radial-gradient(circle, rgba(59, 130, 246, 0.2), transparent); display: flex; align-items: center; justify-content: center; margin: 0 auto;">
-                                            <i class="bi bi-cloud-rain-heavy-fill" style="font-size: 3.5rem; color: #3b82f6; filter: drop-shadow(0 4px 12px rgba(59, 130, 246, 0.5));"></i>
+                                <div style="margin-bottom: 16px; position: relative; display: inline-block;">
+                                    {% if prediction.humidity > 90 and prediction.temperature < 10 %}
+                                        <!-- Heavy Rain & Cold -->
+                                        <div style="width: 70px; height: 70px; border-radius: 50%; background: radial-gradient(circle, rgba(30, 64, 175, 0.15), transparent); display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                            <i class="bi bi-cloud-rain-heavy-fill" style="font-size: 3rem; color: #1e40af; filter: drop-shadow(0 4px 12px rgba(30, 64, 175, 0.5));"></i>
+                                        </div>
+                                    {% elif prediction.humidity > 85 and prediction.temperature < 15 %}
+                                        <!-- Heavy Rain -->
+                                        <div style="width: 70px; height: 70px; border-radius: 50%; background: radial-gradient(circle, rgba(59, 130, 246, 0.15), transparent); display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                            <i class="bi bi-cloud-rain-fill" style="font-size: 3rem; color: #3b82f6; filter: drop-shadow(0 4px 12px rgba(59, 130, 246, 0.5));"></i>
                                         </div>
                                     {% elif prediction.humidity > 75 and prediction.temperature < 20 %}
-                                        <div style="width: 80px; height: 80px; border-radius: 50%; background: radial-gradient(circle, rgba(96, 165, 250, 0.2), transparent); display: flex; align-items: center; justify-content: center; margin: 0 auto;">
-                                            <i class="bi bi-cloud-drizzle-fill" style="font-size: 3.5rem; color: #60a5fa; filter: drop-shadow(0 4px 12px rgba(96, 165, 250, 0.5));"></i>
+                                        <!-- Light Rain/Drizzle -->
+                                        <div style="width: 70px; height: 70px; border-radius: 50%; background: radial-gradient(circle, rgba(96, 165, 250, 0.15), transparent); display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                            <i class="bi bi-cloud-drizzle-fill" style="font-size: 3rem; color: #60a5fa; filter: drop-shadow(0 4px 12px rgba(96, 165, 250, 0.5));"></i>
                                         </div>
-                                    {% elif prediction.humidity > 80 %}
-                                        <div style="width: 80px; height: 80px; border-radius: 50%; background: radial-gradient(circle, rgba(148, 163, 184, 0.2), transparent); display: flex; align-items: center; justify-content: center; margin: 0 auto;">
-                                            <i class="bi bi-cloud-fog2-fill" style="font-size: 3.5rem; color: #94a3b8; filter: drop-shadow(0 4px 12px rgba(148, 163, 184, 0.5));"></i>
+                                    {% elif prediction.humidity > 85 %}
+                                        <!-- Foggy/Misty -->
+                                        <div style="width: 70px; height: 70px; border-radius: 50%; background: radial-gradient(circle, rgba(148, 163, 184, 0.15), transparent); display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                            <i class="bi bi-cloud-fog2-fill" style="font-size: 3rem; color: #94a3b8; filter: drop-shadow(0 4px 12px rgba(148, 163, 184, 0.5));"></i>
+                                        </div>
+                                    {% elif prediction.temperature > 35 %}
+                                        <!-- Extremely Hot -->
+                                        <div style="width: 70px; height: 70px; border-radius: 50%; background: radial-gradient(circle, rgba(220, 38, 38, 0.2), transparent); display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                            <i class="bi bi-fire" style="font-size: 3rem; color: #dc2626; filter: drop-shadow(0 4px 12px rgba(220, 38, 38, 0.6)); animation: pulse 2s ease-in-out infinite;"></i>
                                         </div>
                                     {% elif prediction.temperature > 30 %}
-                                        <div style="width: 80px; height: 80px; border-radius: 50%; background: radial-gradient(circle, rgba(245, 158, 11, 0.25), transparent); display: flex; align-items: center; justify-content: center; margin: 0 auto;">
-                                            <i class="bi bi-sun-fill" style="font-size: 3.5rem; color: #f59e0b; filter: drop-shadow(0 4px 12px rgba(245, 158, 11, 0.6)); animation: pulse 2s ease-in-out infinite;"></i>
+                                        <!-- Very Hot & Sunny -->
+                                        <div style="width: 70px; height: 70px; border-radius: 50%; background: radial-gradient(circle, rgba(245, 158, 11, 0.2), transparent); display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                            <i class="bi bi-sun-fill" style="font-size: 3rem; color: #f59e0b; filter: drop-shadow(0 4px 12px rgba(245, 158, 11, 0.6)); animation: pulse 2s ease-in-out infinite;"></i>
                                         </div>
-                                    {% elif prediction.temperature > 25 %}
-                                        <div style="width: 80px; height: 80px; border-radius: 50%; background: radial-gradient(circle, rgba(251, 191, 36, 0.25), transparent); display: flex; align-items: center; justify-content: center; margin: 0 auto;">
-                                            <i class="bi bi-brightness-high-fill" style="font-size: 3.5rem; color: #fbbf24; filter: drop-shadow(0 4px 12px rgba(251, 191, 36, 0.5));"></i>
+                                    {% elif prediction.temperature > 25 and prediction.humidity < 40 %}
+                                        <!-- Hot & Clear -->
+                                        <div style="width: 70px; height: 70px; border-radius: 50%; background: radial-gradient(circle, rgba(251, 191, 36, 0.2), transparent); display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                            <i class="bi bi-brightness-high-fill" style="font-size: 3rem; color: #fbbf24; filter: drop-shadow(0 4px 12px rgba(251, 191, 36, 0.5));"></i>
                                         </div>
-                                    {% elif prediction.temperature > 20 %}
-                                        <div style="width: 80px; height: 80px; border-radius: 50%; background: radial-gradient(circle, rgba(96, 165, 250, 0.2), transparent); display: flex; align-items: center; justify-content: center; margin: 0 auto;">
-                                            <i class="bi bi-cloud-sun-fill" style="font-size: 3.5rem; color: #60a5fa; filter: drop-shadow(0 4px 12px rgba(96, 165, 250, 0.5));"></i>
+                                    {% elif prediction.temperature > 25 and prediction.humidity >= 40 %}
+                                        <!-- Warm & Humid -->
+                                        <div style="width: 70px; height: 70px; border-radius: 50%; background: radial-gradient(circle, rgba(251, 191, 36, 0.2), transparent); display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                            <i class="bi bi-cloud-sun-fill" style="font-size: 3rem; color: #fbbf24; filter: drop-shadow(0 4px 12px rgba(251, 191, 36, 0.5));"></i>
+                                        </div>
+                                    {% elif prediction.temperature > 20 and prediction.humidity < 50 %}
+                                        <!-- Pleasant & Clear -->
+                                        <div style="width: 70px; height: 70px; border-radius: 50%; background: radial-gradient(circle, rgba(96, 165, 250, 0.15), transparent); display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                            <i class="bi bi-cloud-sun-fill" style="font-size: 3rem; color: #60a5fa; filter: drop-shadow(0 4px 12px rgba(96, 165, 250, 0.5));"></i>
+                                        </div>
+                                    {% elif prediction.temperature > 20 and prediction.humidity >= 50 %}
+                                        <!-- Partly Cloudy -->
+                                        <div style="width: 70px; height: 70px; border-radius: 50%; background: radial-gradient(circle, rgba(148, 163, 184, 0.15), transparent); display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                            <i class="bi bi-cloud-sun" style="font-size: 3rem; color: #94a3b8; filter: drop-shadow(0 4px 12px rgba(148, 163, 184, 0.5));"></i>
+                                        </div>
+                                    {% elif prediction.temperature > 15 and prediction.humidity > 70 %}
+                                        <!-- Cloudy & Humid -->
+                                        <div style="width: 70px; height: 70px; border-radius: 50%; background: radial-gradient(circle, rgba(100, 116, 139, 0.15), transparent); display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                            <i class="bi bi-clouds-fill" style="font-size: 3rem; color: #64748b; filter: drop-shadow(0 4px 12px rgba(100, 116, 139, 0.5));"></i>
                                         </div>
                                     {% elif prediction.temperature > 15 %}
-                                        <div style="width: 80px; height: 80px; border-radius: 50%; background: radial-gradient(circle, rgba(148, 163, 184, 0.2), transparent); display: flex; align-items: center; justify-content: center; margin: 0 auto;">
-                                            <i class="bi bi-clouds-fill" style="font-size: 3.5rem; color: #94a3b8; filter: drop-shadow(0 4px 12px rgba(148, 163, 184, 0.5));"></i>
+                                        <!-- Mostly Cloudy -->
+                                        <div style="width: 70px; height: 70px; border-radius: 50%; background: radial-gradient(circle, rgba(148, 163, 184, 0.15), transparent); display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                            <i class="bi bi-clouds" style="font-size: 3rem; color: #94a3b8; filter: drop-shadow(0 4px 12px rgba(148, 163, 184, 0.5));"></i>
+                                        </div>
+                                    {% elif prediction.temperature > 10 and prediction.humidity > 65 %}
+                                        <!-- Overcast & Damp -->
+                                        <div style="width: 70px; height: 70px; border-radius: 50%; background: radial-gradient(circle, rgba(100, 116, 139, 0.15), transparent); display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                            <i class="bi bi-cloud-fill" style="font-size: 3rem; color: #64748b; filter: drop-shadow(0 4px 12px rgba(100, 116, 139, 0.5));"></i>
                                         </div>
                                     {% elif prediction.temperature > 10 %}
-                                        <div style="width: 80px; height: 80px; border-radius: 50%; background: radial-gradient(circle, rgba(100, 116, 139, 0.2), transparent); display: flex; align-items: center; justify-content: center; margin: 0 auto;">
-                                            <i class="bi bi-cloud-fill" style="font-size: 3.5rem; color: #64748b; filter: drop-shadow(0 4px 12px rgba(100, 116, 139, 0.5));"></i>
+                                        <!-- Cool & Cloudy -->
+                                        <div style="width: 70px; height: 70px; border-radius: 50%; background: radial-gradient(circle, rgba(100, 116, 139, 0.15), transparent); display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                            <i class="bi bi-cloud" style="font-size: 3rem; color: #64748b; filter: drop-shadow(0 4px 12px rgba(100, 116, 139, 0.5));"></i>
+                                        </div>
+                                    {% elif prediction.temperature > 5 and prediction.humidity > 70 %}
+                                        <!-- Cold & Hazy -->
+                                        <div style="width: 70px; height: 70px; border-radius: 50%; background: radial-gradient(circle, rgba(124, 58, 237, 0.15), transparent); display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                            <i class="bi bi-cloud-haze2-fill" style="font-size: 3rem; color: #7c3aed; filter: drop-shadow(0 4px 12px rgba(124, 58, 237, 0.5));"></i>
                                         </div>
                                     {% elif prediction.temperature > 5 %}
-                                        <div style="width: 80px; height: 80px; border-radius: 50%; background: radial-gradient(circle, rgba(124, 58, 237, 0.2), transparent); display: flex; align-items: center; justify-content: center; margin: 0 auto;">
-                                            <i class="bi bi-cloud-haze-fill" style="font-size: 3.5rem; color: #7c3aed; filter: drop-shadow(0 4px 12px rgba(124, 58, 237, 0.5));"></i>
+                                        <!-- Cold & Overcast -->
+                                        <div style="width: 70px; height: 70px; border-radius: 50%; background: radial-gradient(circle, rgba(71, 85, 105, 0.15), transparent); display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                            <i class="bi bi-cloud-haze-fill" style="font-size: 3rem; color: #475569; filter: drop-shadow(0 4px 12px rgba(71, 85, 105, 0.5));"></i>
+                                        </div>
+                                    {% elif prediction.temperature > 0 %}
+                                        <!-- Very Cold -->
+                                        <div style="width: 70px; height: 70px; border-radius: 50%; background: radial-gradient(circle, rgba(59, 130, 246, 0.15), transparent); display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                            <i class="bi bi-snow2" style="font-size: 3rem; color: #3b82f6; filter: drop-shadow(0 4px 12px rgba(59, 130, 246, 0.5));"></i>
                                         </div>
                                     {% else %}
-                                        <div style="width: 80px; height: 80px; border-radius: 50%; background: radial-gradient(circle, rgba(96, 165, 250, 0.2), transparent); display: flex; align-items: center; justify-content: center; margin: 0 auto;">
-                                            <i class="bi bi-snow" style="font-size: 3.5rem; color: #60a5fa; filter: drop-shadow(0 4px 12px rgba(96, 165, 250, 0.5));"></i>
+                                        <!-- Freezing/Snow -->
+                                        <div style="width: 70px; height: 70px; border-radius: 50%; background: radial-gradient(circle, rgba(96, 165, 250, 0.15), transparent); display: flex; align-items: center; justify-content: center; margin: 0 auto;">
+                                            <i class="bi bi-snow" style="font-size: 3rem; color: #60a5fa; filter: drop-shadow(0 4px 12px rgba(96, 165, 250, 0.5));"></i>
                                         </div>
                                     {% endif %}
                                 </div>
                                 
                                 <!-- Temperature -->
-                                <div style="margin-bottom: 12px;">
-                                    <div style="font-size: 2rem; font-weight: 700; color: var(--primary); line-height: 1;">
+                                <div style="margin-bottom: 16px;">
+                                    <div style="font-size: 2.25rem; font-weight: 700; color: var(--dark); line-height: 1; margin-bottom: 4px;">
                                         {{ prediction.temperature|floatformat:1 }}°C
                                     </div>
-                                    <div style="font-size: 0.75rem; color: var(--secondary); margin-top: 4px;">
+                                    <div style="font-size: 0.8rem; color: var(--secondary);">
                                         {% if prediction.temperature > current_weather.current_temp %}
-                                            <i class="bi bi-arrow-up" style="color: #ef4444;"></i> Warmer
+                                            <i class="bi bi-arrow-up-short" style="color: #ef4444; font-size: 1.1rem;"></i>
+                                            <span style="color: #ef4444;">{{ prediction.temperature|floatformat:1|add:"-"|add:current_weather.current_temp|floatformat:1 }}° warmer</span>
                                         {% elif prediction.temperature < current_weather.current_temp %}
-                                            <i class="bi bi-arrow-down" style="color: #3b82f6;"></i> Cooler
+                                            <i class="bi bi-arrow-down-short" style="color: #3b82f6; font-size: 1.1rem;"></i>
+                                            <span style="color: #3b82f6;">{{ current_weather.current_temp|floatformat:1|add:"-"|add:prediction.temperature|floatformat:1 }}° cooler</span>
                                         {% else %}
-                                            <i class="bi bi-dash"></i> Same
+                                            <i class="bi bi-dash-lg" style="color: var(--secondary);"></i> No change
                                         {% endif %}
                                     </div>
                                 </div>
                                 
-                                <!-- Humidity -->
-                                <div style="display: flex; align-items: center; justify-content: center; gap: 8px; padding: 8px 12px; background: #f1f5f9; border-radius: 8px; margin-bottom: 8px;">
-                                    <i class="bi bi-droplet-fill" style="color: #3b82f6; font-size: 0.9rem;"></i>
-                                    <span style="font-size: 0.875rem; font-weight: 600; color: var(--dark);">
-                                        {{ prediction.humidity|floatformat:0 }}%
-                                    </span>
-                                    <span style="font-size: 0.75rem; color: var(--secondary);">
-                                        Humidity
-                                    </span>
-                                </div>
-                                
-                                <!-- Condition Badge -->
-                                <div style="margin-top: 8px;">
-                                    {% if prediction.humidity > 80 %}
-                                        <span style="display: inline-block; padding: 4px 10px; background: #dbeafe; color: #1e40af; border-radius: 12px; font-size: 0.75rem; font-weight: 500;">
-                                            <i class="bi bi-droplet"></i> Humid
-                                        </span>
-                                    {% elif prediction.humidity < 30 %}
-                                        <span style="display: inline-block; padding: 4px 10px; background: #fef3c7; color: #92400e; border-radius: 12px; font-size: 0.75rem; font-weight: 500;">
-                                            <i class="bi bi-sun"></i> Dry
-                                        </span>
-                                    {% else %}
-                                        <span style="display: inline-block; padding: 4px 10px; background: #d1fae5; color: #065f46; border-radius: 12px; font-size: 0.75rem; font-weight: 500;">
-                                            <i class="bi bi-check-circle"></i> Comfortable
-                                        </span>
-                                    {% endif %}
+                                <!-- Weather Details Grid -->
+                                <div style="display: grid; grid-template-columns: 1fr; gap: 6px;">
+                                    <!-- Humidity -->
+                                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 6px 10px; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 6px;">
+                                        <div style="display: flex; align-items: center; gap: 6px;">
+                                            <i class="bi bi-droplet-fill" style="color: #3b82f6; font-size: 0.85rem;"></i>
+                                            <span style="font-size: 0.75rem; color: var(--secondary);">Humidity</span>
+                                        </div>
+                                        <span style="font-size: 0.875rem; font-weight: 600; color: var(--dark);">{{ prediction.humidity|floatformat:0 }}%</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
