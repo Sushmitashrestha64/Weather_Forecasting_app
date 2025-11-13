@@ -296,13 +296,7 @@ def weather_dashboard(request):
             "search_count": recent_searches.count(),
             "prediction_count": prediction_history.count(),
             # Add intelligent insights
-            "clothing_insights": intelligent_insights.get("clothing"),
-            "health_insights": intelligent_insights.get("health"),
-            "activity_insights": intelligent_insights.get("activities"),
             "travel_insights": intelligent_insights.get("travel"),
-            "energy_insights": intelligent_insights.get("energy"),
-            "agriculture_insights": intelligent_insights.get("agriculture"),
-            "photography_insights": intelligent_insights.get("photography"),
             "smart_alerts": intelligent_insights.get("alerts"),
             "historical_comparison": intelligent_insights.get("comparison"),
             # Add news
