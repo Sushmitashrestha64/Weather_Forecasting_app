@@ -807,7 +807,8 @@
                 </div>
                 {% endfor %}
             </div>
-            {% endif %} {% if city_suggestions %}
+            {% endif %}
+            {% if city_suggestions %}
             <div style="margin: 20px 0">
                 <div
                     style="
@@ -860,15 +861,15 @@
                                 onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(0, 0, 0, 0.2)';"
                                 onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0, 0, 0, 0.1)';"
                             >
-                                <i class="bi bi-geo-alt-fill"></i> {{ suggestion
-                                }}
+                                <i class="bi bi-geo-alt-fill"></i> {{ suggestion }}
                             </button>
                         </form>
                         {% endfor %}
                     </div>
                 </div>
             </div>
-            {% endif %} {% if city %}
+            {% endif %}
+            {% if city %}
             <div class="location-header">
                 <h1 class="location-title">
                     <i class="bi bi-geo-alt-fill"></i> {{ city }}, {{ country }}
